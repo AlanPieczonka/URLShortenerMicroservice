@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"log"
-	//"math/rand"
+	"math/rand"
 	"net/http"
-	//"strconv"
+	"strconv"
 	"fmt"
 	"bytes"
 	"github.com/gorilla/mux"
@@ -59,8 +59,18 @@ func saveUrl(w http.ResponseWriter, r *http.Request){
 	for _, item := range urls {
 		if item.NormalURL == params["url"] {
 			json.NewEncoder(w).Encode(item)
+			return
+		} else if item.ShortURL == params["url"]{
+			json.NewEncoder(w).Encode(item)
+			return
 		}
 	}
+
+	var newUrl Url
+	newUrl.NormalURL = params["url"]	
+	newUrl.ShortURL = strconv.Itoa(rand.Intn(1000000))
+	urls = append(urls, newUrl)
+	json.NewEncoder(w).Encode(newUrl)
 }
 
 func main(){
