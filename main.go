@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-	"fmt"
 	"bytes"
 	"github.com/gorilla/mux"
 )
@@ -22,40 +21,43 @@ type DefaultMsg struct {
 
 var urls []Url
 
+func createMessage(msg string) DefaultMsg {
+	var message DefaultMsg
+	message.MSG = msg
+	return message
+}
+
 func defaultMessage(w http.ResponseWriter, r *http.Request){
-	var msg DefaultMsg
-	msg.MSG = "Please enter the url"
-	json.NewEncoder(w).Encode(msg)
+	mymsg := createMessage("Please enter the url")
+	json.NewEncoder(w).Encode(mymsg)
+}
+
+func getRandomNum(spectrum int) string {
+	return strconv.Itoa(rand.Intn(spectrum))
 }
 
 func redirectToUrl(w http.ResponseWriter, r *http.Request){
 	params := mux.Vars(r)
-	fmt.Println("Params ", params)
-	fmt.Println(urls)
 	for _, item := range urls {
 		if item.ShortURL == params["url"] {
 			var buffer bytes.Buffer
 			buffer.WriteString("http://")
 			buffer.WriteString(item.NormalURL)
-			http.Redirect(w, r, buffer.String(), 302) //to do: seperate function
+			http.Redirect(w, r, buffer.String(), 302)
 			return
 		} else if item.NormalURL == params["url"]{
 			json.NewEncoder(w).Encode(item)
 			return
 		}
 	}
-	var mymsg DefaultMsg
-	mymsg.MSG = "Redirect to Url and from redirectToUrl function"
+	mymsg := createMessage("There is no website like this in our dataset")
 	json.NewEncoder(w).Encode(mymsg)
 }
-
 
 func saveUrl(w http.ResponseWriter, r *http.Request){
 	
 	params := mux.Vars(r)
-	w.Header().Set("Content_Type", "application/json")
 
-	fmt.Println("saveUrl", params["url"])
 	for _, item := range urls {
 		if item.NormalURL == params["url"] {
 			json.NewEncoder(w).Encode(item)
@@ -68,7 +70,7 @@ func saveUrl(w http.ResponseWriter, r *http.Request){
 
 	var newUrl Url
 	newUrl.NormalURL = params["url"]	
-	newUrl.ShortURL = strconv.Itoa(rand.Intn(1000000))
+	newUrl.ShortURL = getRandomNum(100000)
 	urls = append(urls, newUrl)
 	json.NewEncoder(w).Encode(newUrl)
 }
@@ -77,9 +79,9 @@ func main(){
 
 	r := mux.NewRouter()
 
-	urls = append(urls, Url{NormalURL: "www.youtube.com", ShortURL: "90"})
-	urls = append(urls, Url{NormalURL: "www.github.com", ShortURL: "44"})
-	urls = append(urls, Url{NormalURL: "www.emberjs.com", ShortURL: "123"})
+	urls = append(urls, Url{NormalURL: "www.github.com", ShortURL: "12345"})
+	urls = append(urls, Url{NormalURL: "www.emberjs.com", ShortURL: "56789"})
+	urls = append(urls, Url{NormalURL: "www.reactjs.org", ShortURL: "98765"})
 
 	r.HandleFunc("/", defaultMessage)
 	r.HandleFunc("/{url}", redirectToUrl).Methods("GET")
