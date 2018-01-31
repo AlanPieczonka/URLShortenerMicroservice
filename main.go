@@ -28,7 +28,7 @@ func createMessage(msg string) DefaultMsg {
 }
 
 func defaultMessage(w http.ResponseWriter, r *http.Request){
-	mymsg := createMessage("Please enter the url")
+	mymsg := createMessage("Please enter the url, e.g. localhost:8000/56789 or localhost:8000/new/www.github.com")
 	json.NewEncoder(w).Encode(mymsg)
 }
 
